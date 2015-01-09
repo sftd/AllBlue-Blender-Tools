@@ -30,8 +30,8 @@ bl_info = {
     "location": "File",
     "description": "Allows enabling add-ons according to *.blend files.",
     "warning": "",
-    "wiki_url": "To Do",
-    "tracker_url": "To Do",
+    "wiki_url": "https://studio.allblue.pl/wiki/wikis/blender/addons-tools",
+    "tracker_url": "https://github.com/sftd/Addons-Tools",
     "category": "System"
 }
 
@@ -43,14 +43,12 @@ from bpy.app.handlers import persistent
 
 class AddonsToolsPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
-    
-    save = bpy.props.BoolProperty('Save Add-ons', default=True)
+
     load = bpy.props.BoolProperty('Load Add-ons automatically', default=True)
     
     def draw(self, context):
         layout = self.layout
         layout.label('Addons Tools Preferences')
-        layout.prop(self, 'save', text='Enable saving Add-ons by default')
         layout.prop(self, 'load', text='Load Add-ons automatically')
 
 
@@ -81,11 +79,15 @@ class ADTEnableAddonsOperator(bpy.types.Operator):
 def adt_menu_draw(self, context):
     self.layout.operator("wm.adt_enable_addons", icon='LOAD_FACTORY')
     if (context.window_manager.adt_save):
-        self.layout.prop(context.window_manager, "adt_save", text="Save Add-ons", icon='CHECKBOX_HLT')
+        self.layout.prop(context.window_manager, "adt_save", text="ADT Save Add-ons", icon='CHECKBOX_HLT')
     else:
-        self.layout.prop(context.window_manager, "adt_save", text="Save Add-ons", icon='CHECKBOX_DEHLT')
+        self.layout.prop(context.window_manager, "adt_save", text="ADT Save Add-ons", icon='CHECKBOX_DEHLT')
     self.layout.separator()
 
+
+def adt_save_update(self, context):
+    scene = bpy.data.scenes[0]
+    scene.adt_save = context.window_manager.adt_save
 
 @persistent
 def adt_save_pre_handler(dummy):
@@ -108,9 +110,9 @@ def adt_save_pre_handler(dummy):
 def adt_load_post_handler(dummy):
     context = bpy.context
 
-    adt_preferences = context.user_preferences.addons['addons_tools'].preferences
+    adt_preferences = context.user_preferences.addons['ab_addons_tools'].preferences
     context.window_manager.adt_save = bpy.data.scenes[0].adt_save
-    
+
     if (adt_preferences.load):
         adt_enable_addons()
 
@@ -127,8 +129,8 @@ def register():
     
     # Properties
     bpy.types.Scene.adt_addons = bpy.props.CollectionProperty(type=ADTAddonItem)
-    bpy.types.Scene.adt_save = bpy.props.BoolProperty('Save Add-ons', default=adt_preferences.save)
-    bpy.types.WindowManager.adt_save = bpy.props.BoolProperty('Save Add-ons', default=adt_preferences.save)
+    bpy.types.Scene.adt_save = bpy.props.BoolProperty('ADT Save Add-ons', default=True)
+    bpy.types.WindowManager.adt_save = bpy.props.BoolProperty('ADT Save Add-ons', default=True, update=adt_save_update)
 
     bpy.app.handlers.save_pre.append(adt_save_pre_handler);
     bpy.app.handlers.load_post.append(adt_load_post_handler)

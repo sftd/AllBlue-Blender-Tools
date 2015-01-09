@@ -1,4 +1,4 @@
-# file_brower_search.py Copyright (C) 2012, Jakub Zolcik
+# ab_file_brower_search.py Copyright (C) 2012, Jakub Zolcik
 #
 # Searches through files in file browser by name.
 #

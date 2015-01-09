@@ -81,7 +81,7 @@ class MSTSortMeshElementsOperator(bpy.types.Operator):
         
         self.sort_from = context.window_manager.mst_sort_from
         self.sort_object = context.window_manager.mst_sort_object
-        self.sort_verts = context.window_manager.mst_sort_verts
+        self.sort_verts = True #context.window_manager.mst_sort_verts
         self.sort_faces = context.window_manager.mst_sort_faces
         self.connected_first = context.window_manager.mst_connected_first
         self.from_faces = context.window_manager.mst_from_faces
@@ -671,8 +671,8 @@ def draw_options(layout, context):
     row = layout.row()
     row.prop(context.window_manager, 'mst_sort_object')
     
-    row = layout.row()
-    row.prop(context.window_manager, 'mst_sort_verts')
+    # row = layout.row()
+    # row.prop(context.window_manager, 'mst_sort_verts')
     
     row = layout.row()
     row.prop(context.window_manager, 'mst_sort_faces')
