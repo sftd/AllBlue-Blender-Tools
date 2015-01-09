@@ -1,4 +1,4 @@
-# ab_groups_particles_tools.py Copyright (C) 2012, Jakub Zolcik
+# ab_group_particles_tools.py Copyright (C) 2012, Jakub Zolcik
 #
 # Searches through files in file browser by name.
 #
@@ -22,15 +22,15 @@
 # ***** END GPL LICENCE BLOCK *****
 
 bl_info = {
-    "name": "Groups Particles Tools",
+    "name": "Group Particles Tools",
     "author": "Jakub Zolcik",
     "version": (0, 0, 1),
     "blender": (2, 7, 2),
-    "location": "View3D -> Tool Shelf",
+    "location": "Properties -> Object -> Groups",
     "description": "Allows advanced usage of Particles with Object Groups.",
     "warning": "",
-    "wiki_url": "https://studio.allblue.pl/wiki/wikis/blender/group-particles-tools/",
-    "tracker_url": "https://github.com/sftd/AllBlue-Blender-Tools",
+    "wiki_url": "https://studio.allblue.pl/wiki/wikis/group-particles-tools",
+    "tracker_url": "https://github.com/sftd/Group-Particles-Tools",
     "category": "Animation"
 }
 
@@ -212,8 +212,11 @@ class GPTCreateGroupMeshOperator(bpy.types.Operator):
         
         for object in group.objects:
             vertices.append(object.location - group_center)
-        vertices.append(mathutils.Vector((0.0, 0.0, 0.0)))
-        
+        #vertices.append(mathutils.Vector((0.0, 0.0, 0.0)))
+        # Double last vertex
+        object = group.objects[len(group.objects) - 1]
+        vertices.append(object.location - group_center)
+            
         gm_mesh.from_pydata(vertices, [], [])
         gm_mesh.update()
         
@@ -229,7 +232,7 @@ class GPTCreateGroupMeshOperator(bpy.types.Operator):
         bpy.ops.object.gpt_update_group(group_name=group.name)
         
         # Clean Up
-        bpy.ops.view3d.snap_cursor_to_active()
+        #xbpy.ops.view3d.snap_cursor_to_active()
         
         return {'FINISHED'}
         
@@ -260,7 +263,7 @@ class GPTUpdateGroupOperator(bpy.types.Operator):
             return {'CANCELLED'}
         
         group = bpy.data.groups[self.group_name]
-        
+
         if (len(group.objects) == 0):
             raise Exception('Empty group selected.')
             return {'CANCELLED'}
@@ -269,6 +272,10 @@ class GPTUpdateGroupOperator(bpy.types.Operator):
             raise Exception('Group does not have a Group Mesh.')
             return {'CANCELLED'}
         
+        if (group.gpt_mesh_name not in bpy.data.objects):
+            group.gpt_mesh_name = ''
+            return {'CANCELLED'}
+
         gm_object = bpy.data.objects[group.gpt_mesh_name]
         t_group_objects = group.objects[:]
         t_group_objects_length = len(t_group_objects)
@@ -284,32 +291,67 @@ class GPTUpdateGroupOperator(bpy.types.Operator):
             group_center = (i * group_center + group.objects[t_group_object_i].location) / (i + 1)
             group.objects.unlink(group.objects[t_group_object_i])
         
-        # Find Objects closest to Vertex and add it to group.
-        for vertex_i in range(t_group_objects_length):
-            vertex = gm_object.data.vertices[vertex_i]
-                    
-            # Move Zero Vertex to the end of a Group Mesh. 
-            if (vertex.co.x == 0.0 and vertex.co.y == 0.0 and vertex.co.z == 0.0):
-                vertex.co = gm_object.data.vertices[vertex_i + 1].co
-                gm_object.data.vertices[vertex_i + 1].co = mathutils.Vector((0.0, 0.0, 0.0))
-                
-            closest_object = None
+        # Find Vertices closest to Objects.
+        new_group_objects = [None] * (t_group_objects_length + 1)
+        unused_vertex_indexes = []
+        for i in range(0, t_group_objects_length + 1):
+            unused_vertex_indexes.append(i)
+        
+        for object in t_group_objects:
+            closest_vertex_index = -1
             closest_distance = 3.40282e+038
-            
-            for object in t_group_objects:
+
+            for vertex_index in unused_vertex_indexes:
+                vertex = gm_object.data.vertices[vertex_index]
+
                 distance = (vertex.co - (object.location - group_center)).length
+                
                 if (distance < closest_distance):
-                    closest_object = object
+                    closest_vertex_index = vertex.index
                     closest_distance = distance
-                    
-            t_group_objects.remove(closest_object)
-            group.objects.link(closest_object)
+    
+            unused_vertex_indexes.remove(closest_vertex_index)
+            new_group_objects[closest_vertex_index] = object
+
+        # Move unused vertex to the last index and make coordinates match last object.
+        vertices = gm_object.data.vertices
+        print(unused_vertex_indexes[0])
+        for vertex_i in range(unused_vertex_indexes[0], len(vertices) - 1):
+            print("test", vertex_i)
+            vertices[vertex_i].co = vertices[vertex_i + 1].co
+        vertices[len(vertices) - 1].co = vertices[len(vertices) - 2].co
+
+        for object in new_group_objects:
+            if (object is not None):
+                group.objects.link(object)
+
+#        # Find Objects closest to Vertex and add it to group.
+#        for vertex_i in range(t_group_objects_length):
+#            vertex = gm_object.data.vertices[vertex_i]
+#                    
+#            # Move Zero Vertex to the end of a Group Mesh. 
+#            print(vertex_i, vertex.index, vertex.co)
+#            if (vertex.co.x == 0.0 and vertex.co.y == 0.0 and vertex.co.z == 0.0):
+#                vertex.co = gm_object.data.vertices[vertex_i + 1].co
+#                gm_object.data.vertices[vertex_i + 1].co = mathutils.Vector((0.0, 0.0, 0.0))
+#                
+#            closest_object = None
+#            closest_distance = 3.40282e+038
+#            
+#            for object in t_group_objects:
+#                distance = (vertex.co - (object.location - group_center)).length
+#                if (distance < closest_distance):
+#                    closest_object = object
+#                    closest_distance = distance
+#                    
+#            t_group_objects.remove(closest_object)
+#            group.objects.link(closest_object)
             
         return {'FINISHED'}
 
-    def invoke(self, context, event):
-        window_manager = context.window_manager
-        return window_manager.invoke_props_dialog(self)
+#    def invoke(self, context, event):
+#        window_manager = context.window_manager
+#        return window_manager.invoke_props_dialog(self)
     
     def draw(self, context):
         layout = self.layout
@@ -321,20 +363,21 @@ class GPTUpdateGroupOperator(bpy.types.Operator):
         row.prop_search(data = self, property = 'group_name', search_data = bpy.data, search_property = 'groups')
 
 
-class GPTUpdateAllGroups(bpy.types.Operator):
+class GPTUpdateAllGroupsOperator(bpy.types.Operator):
     bl_idname = 'object.gpt_update_all_groups'
     bl_label = 'GPT Update All Groups'
     
     def execute(self, context):
         for group in bpy.data.groups:
-            if (group.gpt_mesh_name != ''):
-                bpy.ops.object.gpt_update_group(group_name=group.name)
+            if (len(group.objects) > 0):
+                if (group.gpt_mesh_name != ''):
+                    bpy.ops.object.gpt_update_group(group_name=group.name)
                 
         return {'FINISHED'}
     
-    
+
 class GPTSetupGroupParticlesSystem(bpy.types.Operator):
-    bl_idname = 'object.gpt_setup_groups_particle_system'
+    bl_idname = 'object.gpt_setup_group_particles_system'
     bl_label = 'GPT Setup Group Mesh Particle System'
     
     def execute(self, context):
@@ -368,25 +411,87 @@ class GPTSetupGroupParticlesSystem(bpy.types.Operator):
             
         return {'FINISHED'}
     
-def register(is_submodule=False):
+
+def gpt_draw_particles_panel(self, context):
+    layout = self.layout
+
+    if (context.active_object.gpt_group_name == ''):
+        return
+
+    row = layout.row()
+    row.label('Group Particles Tools')
+    
+    box = layout.box()
+
+    row = box.row()
+    row.operator('object.gpt_update_all_groups', text='Update All Groups')
+
+    box.separator()
+
+    row = box.row()
+    operator = row.operator('object.gpt_update_group', text='Update Group')
+    operator.group_name=context.active_object.gpt_group_name
+
+    row = box.row()
+    row.operator('object.gpt_setup_group_particles_system', text='Setup Group Particles System')
+
+    layout.separator()
+
+
+def gpt_draw_groups_panel(self, context):
+    layout = self.layout
+
+    row = layout.row()
+    row.label('Group Particles Tools')
+    
+    box = layout.box()
+
+    row = box.row()
+    row.operator('object.gpt_create_group_mesh', text='Create Group Mesh')
+
+    row = box.row()
+    row.operator('object.gpt_match_groups_lengths', text='Match Groups Lengths')
+
+    layout.separator()
+
+
+def register():
+    # Operators
+    bpy.utils.register_class(GPTMatchGroupsLengthsOperator)
+    bpy.utils.register_class(GPTCreateGroupMeshOperator)
+
+    bpy.utils.register_class(GPTUpdateGroupOperator)
+    bpy.utils.register_class(GPTUpdateAllGroupsOperator)
+
+    bpy.utils.register_class(GPTSetupGroupParticlesSystem)
+
     # Properties
     bpy.types.Group.gpt_mesh_name = bpy.props.StringProperty()
     bpy.types.Object.gpt_group_name = bpy.props.StringProperty()
 
-    # Module
-    if (not is_submodule):
-        bpy.utils.register_module(__name__)
-    
-    
-def unregister(is_submodule=False):
-    # Module
-    if (not is_submodule):
-        bpy.utils.unregister_module(__name__)
+    # Draw Functions
+    bpy.types.PARTICLE_PT_context_particles.prepend(gpt_draw_particles_panel)
+    bpy.types.OBJECT_PT_groups.prepend(gpt_draw_groups_panel)
+
+
+def unregister():
+    # Operators
+    bpy.utils.unregister_class(GPTMatchGroupsLengthsOperator)
+    bpy.utils.unregister_class(GPTCreateGroupMeshOperator)
+
+    bpy.utils.unregister_class(GPTUpdateGroupOperator)
+    bpy.utils.unregister_class(GPTUpdateAllGroupsOperator)
+
+    bpy.utils.unregister_class(GPTSetupGroupParticlesSystem)
 
     # Properties
     del bpy.types.Group.gpt_mesh_name
     del bpy.types.Object.gpt_group_name
 
-    
+    # Draw Functions
+    bpy.types.PARTICLE_PT_context_particles.remove(gpt_draw_particles_panel)
+    bpy.types.OBJECT_PT_groups.remove(gpt_draw_groups_panel)
+
+
 if __name__ == "__main__":
     register()
