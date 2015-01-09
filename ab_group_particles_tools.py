@@ -30,7 +30,7 @@ bl_info = {
     "description": "Allows advanced usage of Particles with Object Groups.",
     "warning": "",
     "wiki_url": "https://studio.allblue.pl/wiki/wikis/group-particles-tools",
-    "tracker_url": "https://github.com/sftd/Group-Particles-Tools",
+    "tracker_url": "https://github.com/sftd/AllBlue-Blender-Tools",
     "category": "Animation"
 }
 
