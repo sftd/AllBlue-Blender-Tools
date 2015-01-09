@@ -29,8 +29,8 @@ bl_info = {
     "location": "View3D -> Tool Shelf",
     "description": "Allows advanced usage of Particles with Object Groups.",
     "warning": "",
-    "wiki_url": "ToDo",
-    "tracker_url": "ToDo",
+    "wiki_url": "https://studio.allblue.pl/wiki/wikis/blender/group-particles-tools/",
+    "tracker_url": "https://github.com/sftd/AllBlue-Blender-Tools",
     "category": "Animation"
 }
 
