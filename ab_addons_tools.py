@@ -1,4 +1,4 @@
-# addons.py Copyright (C) 2012, Jakub Zolcik
+# ab_addons_tools.py Copyright (C) 2012, Jakub Zolcik
 #
 # Searches through files in file browser by name.
 #
@@ -31,7 +31,7 @@ bl_info = {
     "description": "Allows enabling add-ons according to *.blend files.",
     "warning": "",
     "wiki_url": "https://studio.allblue.pl/wiki/wikis/blender/addons-tools",
-    "tracker_url": "https://github.com/sftd/Addons-Tools",
+    "tracker_url": "https://github.com/sftd/AllBlue-Blender-Tools",
     "category": "System"
 }
 
