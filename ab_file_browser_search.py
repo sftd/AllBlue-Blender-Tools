@@ -27,12 +27,10 @@ bl_info = {
     "version": (0, 1, 1),
     "blender": (2, 7, 2),
     "location": "File Browser",
-    "description": "Searches through files in file browser by name.",
+    "description": "Searches through files in the file browser by name.",
     "warning": "",
-    "wiki_url": "http://wiki.blender.org/index.php/Extensions:2.6/"
-                "Py/Scripts/Import-Export/File_Browser_Search",
-    "tracker_url": "http://projects.blender.org/tracker/"
-                   "?func=detail&aid=30386&group_id=153&atid=467",
+    "wiki_url": "https://studio.allblue.pl/wiki/wikis/blender/file-browser-search/",
+    "tracker_url": "https://github.com/sftd/AllBlue-Blender-Tools",
     "category": "Import-Export"
 }
 
@@ -181,8 +179,8 @@ class FBSSearchResultsPanel(bpy.types.Panel):
 
             if (search_result.isDirectory):
                 operator = column.operator("file.fbs_file_select",
-                                                        text=display_name,
-                                                        emboss=False, icon='FILE_FOLDER')
+                                           text=display_name,
+                                           emboss=False, icon='FILE_FOLDER')
             else:
                 operator_icon = "FILE_BLANK"
 
@@ -196,9 +194,9 @@ class FBSSearchResultsPanel(bpy.types.Panel):
                         operator_icon = icon
                         break
                 operator = column.operator("file.fbs_file_select",
-                                                         text=display_name,
-                                                         emboss=False,
-                                                         icon=operator_icon)
+                                           text=display_name,
+                                           emboss=False,
+                                           icon=operator_icon)
 
             operator.searchBlendData = search_blend_data
             operator.isBlendData = search_result.isBlendData
@@ -284,9 +282,9 @@ class FBSSearchResultsPanel(bpy.types.Panel):
                 if (search_for_directories):
                     for dir in dirs:
                         if (self.addSearchResult(context, filter_prog,
-                                                            directory_length, path,
-                                                            dir, True, extensions,
-                                                            False)):
+                                                 directory_length, path,
+                                                 dir, True, extensions,
+                                                 False)):
                             results_count += 1
                             if (results_count >= MAX_RESULTS_COUNT):
                                 break
@@ -321,8 +319,8 @@ class FBSSearchResultsPanel(bpy.types.Panel):
                 is_directory = os.path.isdir(os.path.join(directory, file))
                 if (not is_directory or search_for_directories):
                     if (self.addSearchResult(context, filter_prog, 0, '',
-                                                        file, is_directory, extensions,
-                                                        False)):
+                                             file, is_directory, extensions,
+                                             False)):
                         results_count += 1
                         if (results_count >= MAX_RESULTS_COUNT):
                             break
@@ -447,8 +445,8 @@ class FBSSearchResultsPanel(bpy.types.Panel):
         return re.compile(pattern)
 
     def addSearchResult(self, context, prog, directory_length,
-                                    path, file, is_directory, extensions,
-                                    is_blend_data):
+                        path, file, is_directory, extensions,
+                        is_blend_data):
         file = (os.path.join(path, file))[directory_length:]
 
         if (prog.match(file.lower()) is None):
@@ -488,106 +486,22 @@ def register():
     S = bpy.types.Scene
 
     S.fbs_open_on_click = p.BoolProperty(name="Open On Click",
+                                         default=True)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-default=True)
     prop = p.BoolProperty(name="Search in Subdirectories",
+                          update=fbs_initialize_search,
+                          default = False)
+    S.fbs_search_in_subdirectories = prop
 
-
-
-
-
-
-
-
-
-
-update=fbs_initialize_search,
-
-
-
-
-
-
-
-
-
-
-default = False)
-    S.fbs_search_in_subdirectories = prop    
     prop = p.BoolProperty(name="Search for Directories",
-
-
-
-
-
-
-
-
-
-
-update=fbs_initialize_search,
-
-
-
-
-
-
-
-
-
-
-default=True)
+                          update=fbs_initialize_search,
+                          default=True)
     S.fbs_search_for_directories = prop
+
     S.fbs_hide_extensions = p.BoolProperty(name="Hide Extensions",
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-default=False)
+                                           default=False)
     S.fbs_columns_number = p.IntProperty(name="Number of Columns",
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-default=1, min=1, max=5)
+                                         default=1, min=1, max=5)
 
     # temporary properties
     WM = bpy.types.WindowManager 
