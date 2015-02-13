@@ -13,3 +13,5 @@ Group Particles Tools enables a "hidden" functionality of particles systems in B
 ### [Mesh Sorting Tools](https://studio.allblue.pl/wiki/wikis/blender/mesh-sorting-tools)
 Mesh Sorting Tools allows you to sort meshes in a more advanced way. It is quite useful when combined with particles or build/explode modifiers.
 
+### [Animate Render Layers](https://studio.allblue.pl/wiki/wikis/blender/animate-render-layers)
+Animate Render Layers allows you to animate render layers using keyframes. It can be used to speed up renders or replace objects in a scene with for example shattered objects from another layer.
