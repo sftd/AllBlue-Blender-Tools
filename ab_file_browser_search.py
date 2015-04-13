@@ -24,7 +24,7 @@
 bl_info = {
     "name": "File Browser Search",
     "author": "Jakub Zolcik",
-    "version": (0, 1, 1),
+    "version": (0, 1, 2),
     "blender": (2, 7, 2),
     "location": "File Browser",
     "description": "Searches through files in the file browser by name.",
@@ -98,7 +98,7 @@ class FBSSearchResultsPanel(bpy.types.Panel):
     bl_idname = "FILE_PT_fbs_search_results_panel"
     bl_label = "Search:"
     bl_space_type = 'FILE_BROWSER'
-    bl_region_type = 'CHANNELS'
+    bl_region_type = 'TOOL_PROPS'
 
     # (filter_name, icon_name, [extensions_list])
     EXTENSIONS = (("backup", "FILE_BACKUP", [".blend1", ".blend2"]),
